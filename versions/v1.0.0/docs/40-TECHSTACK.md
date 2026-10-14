@@ -2,43 +2,29 @@
 
 # 40-TECHSTACK — Tumpukan Teknologi (pawonee-web)
 
-Mengacu: Pawonee-TownHall v1.0.0 (https://github.com/Coding-Skuy/Pawonee-TownHall).
+Mengacu: Pawonee-TownHall `platform/versions/v1.0.0` (https://github.com/Coding-Skuy/Pawonee-TownHall/tree/main/platform/versions/v1.0.0), beku 2026-10-07. Tidak menduplikasi BRD/PRD/FRD/FSD/SRS; hanya mengunci stack repo ini.
 
-## 1. Kondisi saat ini (tercatat, bukan diubah)
+## 1. Matriks stack
 
-- Next.js 15.1.6, React 19.0.0, TypeScript 5.7.2, Node.js 22.12.0 LTS (sumber: `package.json`, `README.md`, `VERSIONS.md` infra). Kondisi saat ini: Next.js 15 — drift dari kunci standar divisi.
-- Basis URL backend: `NEXT_PUBLIC_PAWONEE_API` (bawaan `http://localhost:8080`).
-- Cermin model: `src/lib/pantryResep.ts` diselaraskan manual ke `:shared:pantry-resep` milik Pawonee dan `models/schema.json`.
-- Kondisi Next.js 15 adalah drift yang dicatat apa adanya dari `package.json` dan `VERSIONS.md`.
-
-## 2. Target standar emas (rencana)
-
-- SvelteKit versi terbaru dan Bun versi terbaru (runtime dan manajer paket), TypeScript 5.x terbaru.
-- Alasan: keselarasan divisi ke tumpukan SvelteKit dan Bun untuk web pendamping; waktu muat lebih ringan untuk halaman resep.
-- Target lain yang selaras: backend Rust axum 0.8.4, KMP Kotlin 2.2.20 dan Compose 1.8.2 dan nav3 1.0.0, Python 3.12, Postgres 16.x, database `pawonee`, JWT audiens `pawonee`.
-
-## 3. Langkah migrasi (rencana — BUKAN eksekusi sekarang)
-
-1. Saat fase coding dimulai, ganti `package.json`: keluarkan `next`, `react`, `react-dom`, `eslint-config-next`; masukkan `@sveltejs/kit`, `svelte`, `vite`, adapter Bun.
-2. Ganti routes: `src/app/page.tsx` menjadi rute SvelteKit `src/routes/+page.svelte` (ditambah `+layout.svelte`, `+server.ts` bila perlu API).
-3. Ganti komponen: `RecipeCard` referensi React menjadi komponen Svelte; pindahkan `src/lib/pantryResep.ts` menjadi versi SvelteKit (fungsi `fetch` sama, tanpa dependensi Next).
-4. Ganti konfigurasi: hapus `next.config.mjs`, tambah `svelte.config.js` dan `vite.config.ts`; perbarui `tsconfig.json` ke preset SvelteKit.
-5. Validasi: `bun install`, `bun run check`, `bun run build`, uji kontrak `GET /v1/resep/rekomendasi` dan preferensi tetap lolos.
-6. Perbarui `VERSIONS.md` di infra dan dokumen ini setelah migrasi selesai.
-
-## 4. Matriks versi
-
-| Komponen | Saat ini | Target |
+| Komponen | Kondisi saat ini (tercatat) | Target terkunci v1.0.0 |
 |---|---|---|
-| Runtime web | Node.js 22.12.0 | Bun terbaru |
-| Framework web | Next.js 15.1.6 | SvelteKit terbaru |
-| UI | React 19.0.0 | Svelte terbaru |
-| Bahasa | TypeScript 5.7.2 | TypeScript 5.x terbaru |
+| Runtime | Node.js 22.12.0 LTS | Bun (versi eksak dikunci saat kickoff; rujukan 1.4.x) |
+| Framework | Next.js 15.1.6 | SvelteKit 2 |
+| UI | React 19.0.0 | Svelte 5 (runes) |
+| Bahasa | TypeScript 5.7.2 | TypeScript 5.9.x (rujukan produk/21) |
+| Validasi | belum ada | Zod |
+| Uji | belum ada | `bun run test` 32 kasus paritas |
+
+## 2. Kewajiban migrasi (drift Next.js/React)
+
+Repo masih Next.js 15 + React 19 — menyimpang dari standar divisi. Migrasi ke **Bun + Svelte 5 + SvelteKit 2** WAJIB dilakukan; tiket pelaksana: `PWN-WEB-005` (issue #5), induk MILESTONE M-008.
+
+Langkah: (1) bekukan kontrak; (2) ganti `package.json` (keluarkan `next`, `react`, `react-dom`, `eslint-config-next`; masukkan `@sveltejs/kit`, `svelte`, `vite`, adapter Bun); (3) pindahkan `src/app/*` ke `src/routes/*` (`+page.svelte`, `+layout.svelte`, `+server.ts`); (4) pindahkan `src/lib/pantryResep.ts` ke versi SvelteKit; (5) ganti `next.config.mjs` dengan `svelte.config.js` + `vite.config.ts`; (6) validasi `bun install`, `bun run check`, `bun run build`, uji kontrak, paritas 32 kasus; (7) perbarui `VERSIONS.md` di `pawonee-infra-devops`.
+
+Syarat mulai: kontrak dibekukan dan fase coding disetujui TownHall (M-008). Tidak ada fitur baru di kode Next.js.
 
 ## Batasan
 
-- JANGAN migrasi Next.js sekarang; JANGAN ubah kode dalam dokumen versi ini. Bagian migrasi di atas adalah rencana yang didokumentasikan, bukan eksekusi.
-- Dokumen versi ini tidak mengubah `package.json`, routes, atau komponen.
-- JWT audiens tetap `pawonee`; basis data tetap `pawonee`; kontrak API tidak berubah akibat rencana migrasi.
-- Eksekusi migrasi hanya dimulai pada fase coding setelah persetujuan TownHall Pawonee-TownHall v1.0.0.
-- Perencanaan BRD, PRD, FSD, dan roadmap repo ini mengacu Pawonee-TownHall v1.0.0 dan tidak diduplikasi di sini.
+- Dokumen ini tidak mengubah manifes atau kode; kondisi saat ini dicatat apa adanya dari manifes/README repo.
+- Versi dikunci eksak di manifes saat kickoff coding; perubahan versi dicatat di dokumen ini lewat versi dokumen berikutnya dan ADR baru.
+- JWT audiens `pawonee`, DB logis `pawonee`, dan `:shared:pantry-resep` milik Pawonee tidak berubah oleh dokumen ini.
